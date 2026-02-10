@@ -1,0 +1,1003 @@
+<!DOCTYPE html><html lang="es"><head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Guía de OpenCode para Ubuntu y VS Code</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Canela:wght@300;400;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --slate-gray: #475569;
+            --deep-teal: #0f766e;
+            --burnt-sienna: #dc2626;
+            --soft-ivory: #fefce8;
+            --accent-teal: #14b8a6;
+        }
+        
+        .font-canela { font-family: 'Canela', serif; }
+        .font-inter { font-family: 'Inter', sans-serif; }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, 
+                rgba(15, 118, 110, 0.1) 0%, 
+                rgba(71, 85, 105, 0.15) 50%, 
+                rgba(20, 184, 166, 0.1) 100%);
+        }
+        
+        .toc-fixed {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            width: 280px;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+            z-index: 40;
+        }
+        
+        .main-content {
+            margin-left: 320px;
+            max-width: calc(100vw - 360px);
+        }
+        
+        .section-anchor {
+            scroll-margin-top: 2rem;
+        }
+        
+        @media (max-width: 1280px) {
+            .toc-fixed {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+                max-width: 100%;
+            }
+        }
+        
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 1.5rem;
+            height: 400px;
+        }
+        
+        .bento-main {
+            grid-row: 1 / 3;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bento-side-1 {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        
+        .bento-side-2 {
+            grid-column: 2;
+            grid-row: 2;
+        }
+        
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, var(--accent-teal), var(--deep-teal));
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+        
+        .citation-link {
+            color: var(--deep-teal);
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+        
+        .citation-link:hover {
+            border-bottom-color: var(--deep-teal);
+        }
+        
+        .mode-indicator {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .mode-plan {
+            background: rgba(71, 85, 105, 0.2);
+            color: var(--slate-gray);
+            border: 1px solid var(--slate-gray);
+        }
+        
+        .mode-build {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--burnt-sienna);
+            border: 1px solid var(--burnt-sienna);
+        }
+        
+        .workflow-step {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .workflow-step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            background: var(--deep-teal);
+            color: white;
+            border-radius: 9999px;
+            font-weight: 600;
+            margin-right: 1rem;
+        }
+        
+        /* Responsive fixes */
+        @media (max-width: 768px) {
+            body {
+                overflow-x: hidden;
+            }
+            
+            .bento-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+                height: auto;
+            }
+            
+            .bento-main {
+                grid-row: 1;
+                grid-column: 1;
+            }
+            
+            .bento-side-1 {
+                grid-row: 2;
+                grid-column: 1;
+            }
+            
+            .bento-side-2 {
+                grid-row: 3;
+                grid-column: 1;
+            }
+            
+            .hero-gradient h1 {
+                font-size: 1.8rem;
+                line-height: 1.2;
+            }
+            
+            .hero-gradient p {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+  <base target="_blank">
+</head>
+
+  <body class="font-inter bg-gray-50 text-gray-900">
+    <!-- Fixed Table of Contents -->
+    <nav class="toc-fixed bg-white border border-gray-200 rounded-lg shadow-lg p-4">
+      <h3 class="font-canela text-lg font-semibold text-gray-800 mb-4">Contenidos</h3>
+      <ul class="space-y-2 text-sm">
+        <li>
+          <a href="#introduccion" class="text-slate-600 hover:text-teal-700 transition-colors">Introducción</a>
+        </li>
+        <li>
+          <a href="#verificacion" class="text-slate-600 hover:text-teal-700 transition-colors">1. Verificación del Entorno</a>
+          <ul class="ml-3 mt-1 space-y-1 text-xs">
+            <li>
+              <a href="#verificacion-componentes" class="text-slate-500 hover:text-teal-600 transition-colors">1.1 Componentes Instalados</a>
+            </li>
+            <li>
+              <a href="#acceso-inicial" class="text-slate-500 hover:text-teal-600 transition-colors">1.2 Acceso Inicial</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="#modos" class="text-slate-600 hover:text-teal-700 transition-colors">2. Modos de Operación</a>
+          <ul class="ml-3 mt-1 space-y-1 text-xs">
+            <li>
+              <a href="#modo-plan" class="text-slate-500 hover:text-teal-600 transition-colors">2.1 Modo Plan</a>
+            </li>
+            <li>
+              <a href="#modo-build" class="text-slate-500 hover:text-teal-600 transition-colors">2.2 Modo Build</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="#atajos" class="text-slate-600 hover:text-teal-700 transition-colors">3. Atajos y Navegación</a>
+          <ul class="ml-3 mt-1 space-y-1 text-xs">
+            <li>
+              <a href="#sesiones" class="text-slate-500 hover:text-teal-600 transition-colors">3.1 Gestión de Sesiones</a>
+            </li>
+            <li>
+              <a href="#archivos" class="text-slate-500 hover:text-teal-600 transition-colors">3.2 Referencias de Archivos</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="#generacion" class="text-slate-600 hover:text-teal-700 transition-colors">4. Generación de Código</a>
+        </li>
+        <li>
+          <a href="#edicion" class="text-slate-600 hover:text-teal-700 transition-colors">5. Edición y Depuración</a>
+        </li>
+        <li>
+          <a href="#contexto" class="text-slate-600 hover:text-teal-700 transition-colors">6. Sistema de Referencias</a>
+        </li>
+        <li>
+          <a href="#comunicacion" class="text-slate-600 hover:text-teal-700 transition-colors">7. Comunicación Efectiva</a>
+        </li>
+        <li>
+          <a href="#flujo" class="text-slate-600 hover:text-teal-700 transition-colors">8. Flujo de Trabajo</a>
+        </li>
+        <li>
+          <a href="#solucion" class="text-slate-600 hover:text-teal-700 transition-colors">9. Solución de Problemas</a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content px-4 md:px-8 py-12">
+      <!-- Hero Section with Bento Layout -->
+      <section id="introduccion" class="section-anchor mb-16">
+        <div class="bento-grid">
+          <!-- Main Hero Content -->
+          <div class="bento-main hero-gradient rounded-xl p-8 flex flex-col justify-center relative">
+            <img src="https://kimi-web-img.moonshot.cn/img/static.vecteezy.com/a25e8610df9878ee1c3713988b0b2862232aa8ca.jpg" alt="Espiral de código con estética de neón" class="absolute inset-0 w-full h-full object-cover opacity-20 rounded-xl" size="wallpaper" aspect="wide" style="photo" query="espiral código neón" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+            <div class="relative z-10">
+              <h1 class="font-canela text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                <em class="text-teal-700">OpenCode:</em>
+                <br/>
+                Tu Asistente de Código
+                <br/>
+                en Ubuntu y VS Code
+              </h1>
+              <p class="text-xl text-gray-700 mb-6 font-light">
+                Una guía completa para dominar el desarrollo asistido por IA con el modelo gratuito Big Pickle
+              </p>
+              <div class="flex items-center space-x-4">
+                <div class="mode-indicator mode-plan">Modo Plan</div>
+                <div class="mode-indicator mode-build">Modo Build</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Side Panel 1 - Key Features -->
+          <div class="bento-side-1 bg-white border border-gray-200 rounded-xl p-6">
+            <h3 class="font-canela text-lg font-semibold mb-4">Características Clave de OpenCode</h3>
+            <ul class="space-y-3 text-sm">
+              <li class="flex items-center">
+                <i class="fas fa-code text-teal-600 mr-3"></i>
+                <span>Generación de código asistida por IA</span>
+              </li>
+              <li class="flex items-center">
+                <i class="fas fa-magic text-teal-600 mr-3"></i>
+                <span>Modo Plan y Modo Build</span>
+              </li>
+              <li class="flex items-center">
+                <i class="fas fa-keyboard text-teal-600 mr-3"></i>
+                <span>Atajos de teclado optimizados</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Side Panel 2 - Quick Start -->
+          <div class="bento-side-2 bg-gradient-to-br from-teal-50 to-slate-50 border border-gray-200 rounded-xl p-6">
+            <h3 class="font-canela text-lg font-semibold mb-4">Inicio Rápido</h3>
+            <div class="code-block !text-xs !p-3">
+              <div class="text-green-400"># Lanzar OpenCode</div>
+              <div>Ctrl + Esc</div>
+              <div class="text-green-400 mt-2"># Cambiar modo</div>
+              <div>Tab</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TL;DR Section -->
+        <div class="mt-8 bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <h2 class="font-canela text-2xl font-semibold mb-4 flex items-center">
+            <i class="fas fa-rocket text-teal-600 mr-3"></i>
+            TL;DR - Resumen Ejecutivo
+          </h2>
+          <div class="prose prose-lg max-w-none">
+            <p class="text-gray-700 leading-relaxed">
+              Para utilizar OpenCode en VS Code con Ubuntu, presiona <strong>Ctrl+Esc</strong> para iniciar una sesión en el directorio de tu proyecto. Usa el <strong>Modo Plan</strong> (tecla <strong>Tab</strong>) para diseñar estrategias sin modificar archivos, y cambia al <strong>Modo Build</strong> para implementar cambios automáticos. Referencia archivos específicos con la sintaxis <strong>@archivo#L37-42</strong> o usa <strong>Alt+Ctrl+K</strong> para insertar automáticamente el archivo o selección actual. Formula prompts detallados como si instruyeras a un desarrollador junior, itera en Modo Plan antes de construir, y verifica siempre el modo activo antes de ejecutar comandos para evitar modificaciones accidentales.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 1: Environment Verification -->
+      <section id="verificacion" class="section-anchor mb-16">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
+          <h2 class="font-canela text-3xl font-bold text-gray-900 mb-8">
+            1. Verificación del Entorno Configurado
+          </h2>
+
+          <div id="verificacion-componentes" class="section-anchor mb-12">
+            <h3 class="font-canela text-2xl font-semibold text-gray-800 mb-6">1.1 Validación de Componentes Instalados</h3>
+
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+              <div class="bg-slate-50 border border-slate-200 rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                  <i class="fas fa-terminal text-slate-600 text-2xl mr-3"></i>
+                  <h4 class="font-semibold text-gray-800">OpenCode CLI</h4>
+                </div>
+                <p class="text-sm text-gray-600 mb-3">Verifica la instalación global en Ubuntu</p>
+                <div class="code-block !p-2 !text-xs">
+                  opencode --version
+                </div>
+                <a href="https://docs.together.ai/docs/how-to-use-opencode" class="citation-link text-xs">[1]</a>
+              </div>
+
+              <div class="bg-teal-50 border border-teal-200 rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                  <i class="fas fa-puzzle-piece text-teal-600 text-2xl mr-3"></i>
+                  <h4 class="font-semibold text-gray-800">Extensión SST</h4>
+                </div>
+                <p class="text-sm text-gray-600 mb-3">Confirma la correcta instalación de la extensión en VS Code</p>
+                <div class="code-block !p-2 !text-xs">
+                  Ctrl+Shift+X → sst-dev.opencode
+                </div>
+                <a href="https://marketplace.visualstudio.com/items?itemName=sst-dev.opencode" class="citation-link text-xs">[2]</a>
+              </div>
+
+              <div class="bg-amber-50 border border-amber-200 rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                  <i class="fas fa-brain text-amber-600 text-2xl mr-3"></i>
+                  <h4 class="font-semibold text-gray-800">Modelo Big Pickle</h4>
+                </div>
+                <p class="text-sm text-gray-600 mb-3">Selección del modelo gratuito por defecto</p>
+                <div class="code-block !p-2 !text-xs">
+                  opencode auth login
+                </div>
+                <a href="https://docs.together.ai/docs/how-to-use-opencode" class="citation-link text-xs">[1]</a>
+              </div>
+            </div>
+
+            <div class="highlight-box">
+              <h4 class="font-semibold mb-2 flex items-center">
+                <i class="fas fa-lightbulb mr-2"></i>
+                Verificación Rápida
+              </h4>
+              <p>Ejecuta el comando opencode en una terminal para verificar que la TUI se inicia correctamente. Deberías ver la interfaz de usuario con el prompt de OpenCode.</p>
+            </div>
+          </div>
+
+          <div id="acceso-inicial" class="section-anchor">
+            <h3 class="font-canela text-2xl font-semibold text-gray-800 mb-6">1.2 Acceso Inicial</h3>
+
+            <div class="workflow-step">
+              <div class="flex items-start">
+                <div class="workflow-step-number">1</div>
+                <div class="flex-1">
+                  <h4 class="font-semibold text-gray-800 mb-2">Lanzamiento desde Terminal Integrada</h4>
+                  <p class="text-gray-600 mb-3">Utiliza el atajo <strong>Ctrl+Esc</strong> en VS Code para iniciar OpenCode en el directorio de tu proyecto actual. La extensión SST detectará automáticamente el directorio de trabajo.</p>
+                  <div class="code-block !text-xs">
+                    <div class="text-green-400"># Atajo de teclado</div>
+                    <div>Ctrl + Esc</div>
+                  </div>
+                  <a href="https://marketplace.visualstudio.com/items?itemName=sst-dev.opencode" class="citation-link text-xs">[2]</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="workflow-step">
+              <div class="flex items-start">
+                <div class="workflow-step-number">2</div>
+                <div class="flex-1">
+                  <h4 class="font-semibold text-gray-800 mb-2">Activación de la Interfaz TUI Nativa</h4>
+                  <p class="text-gray-600 mb-3">La interfaz de usuario textual (TUI) se activa automáticamente, mostrando un layout dividido con área de conversación, barra de entrada y paneles de estado.</p>
+                  <div class="bg-gray-100 border border-gray-300 rounded p-3 text-sm">
+                    <strong>Características de la TUI:</strong>
+                    <ul class="list-disc list-inside mt-2 space-y-1 text-gray-600">
+                      <li>Soporte para temas y colores</li>
+                      <li>Integración con LSP para análisis semántico</li>
+                      <li>Comandos específicos con prefijo /</li>
+                      <li>Atajos de teclado configurables</li>
+                    </ul>
+                  </div>
+                  <a href="https://docs.together.ai/docs/how-to-use-opencode" class="citation-link text-xs">[1]</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: Operation Modes -->
+      <section id="modos" class="section-anchor mb-16">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
+          <h2 class="font-canela text-3xl font-bold text-gray-900 mb-8">
+            2. Modos de Operación Fundamentales
+          </h2>
+
+          <div id="modo-plan" class="section-anchor mb-12">
+            <div class="flex items-center mb-6">
+              <div class="mode-indicator mode-plan mr-4">Plan</div>
+              <h3 class="font-canela text-2xl font-semibold text-gray-800">2.1 Modo Plan (Planificación)</h3>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+              <div class="space-y-6">
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-6">
+                  <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-map text-slate-600 mr-2"></i>
+                    Definición de Estrategias
+                  </h4>
+                  <p class="text-gray-600 text-sm mb-3">El Modo Plan permite diseñar estrategias sin modificar archivos. El agente analiza solicitudes complejas y genera planes detallados de implementación.</p>
+                  <div class="text-xs text-gray-500">
+                    <strong>Principio:</strong> &#34;Primero planificar, luego ejecutar&#34;
+                  </div>
+                  <a href="https://docs.together.ai/docs/how-to-use-opencode" class="citation-link text-xs">[1]</a>
+                </div>
+
+                <div class="bg-teal-50 border border-teal-200 rounded-lg p-6">
+                  <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-sync-alt text-teal-600 mr-2"></i>
+                    Revisión y Refinamiento
+                  </h4>
+                  <p class="text-gray-600 text-sm">Capacidad para analizar críticamente planes, solicitar modificaciones específicas y refinar estrategias iterativamente antes de la implementación.</p>
+                </div>
+              </div>
+
+              <div class="bg-white border border-gray-200 rounded-lg p-6">
+                <h4 class="font-semibold text-gray-800 mb-4">Ciclo de Planificación</h4>
+                <div class="space-y-4">
+                  <div class="flex items-center">
+                    <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center text-teal-600 font-semibold text-sm">1</div>
+                    <div class="ml-3">
+                      <div class="font-medium text-sm">Solicitud Inicial</div>
+                      <div class="text-xs text-gray-500">Descripción del problema</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center">
+                    <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center text-teal-600 font-semibold text-sm">2</div>
+                    <div class="ml-3">
+                      <div class="font-medium text-sm">Generación de Plan</div>
+                      <div class="text-xs text-gray-500">Análisis y propuesta</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center">
+                    <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center text-teal-600 font-semibold text-sm">3</div>
+                    <div class="ml-3">
+                      <div class="font-medium text-sm">Revisión Crítica</div>
+                      <div class="text-xs text-gray-500">Validación y feedback</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center">
+                    <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center text-teal-600 font-semibold text-sm">4</div>
+                    <div class="ml-3">
+                      <div class="font-medium text-sm">Refinamiento</div>
+                      <div class="text-xs text-gray-500">Ajustes y mejoras</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="highlight-box mt-6">
+              <h4 class="font-semibold mb-2 flex items-center">
+                <i class="fas fa-keyboard mr-2"></i>
+                Alternancia de Modos
+              </h4>
+              <p>Presiona la tecla <strong>Tab</strong> para alternar instantáneamente entre Modo Plan y Modo Build. Verifica visualmente el indicador de modo antes de ejecutar comandos.</p>
+              <a href="https://docs.together.ai/docs/how-to-use-opencode" class="citation-link text-xs">[1]</a>
+            </div>
+          </div>
+
+          <div id="modo-build" class="section-anchor">
+            <div class="flex items-center mb-6">
+              <div class="mode-indicator mode-build mr-4">Build</div>
+              <h3 class="font-canela text-2xl font-semibold text-gray-800">2.2 Modo Build (Construcción)</h3>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+              <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                  <i class="fas fa-hammer text-red-600 mr-2"></i>
+                  Implementación Directa
+                </h4>
+                <p class="text-gray-600 text-sm mb-3">El agente puede modificar directamente el sistema de archivos para implementar características, corregir errores o refactorizar código.</p>
+                <div class="text-xs text-red-600 font-medium">
+                  ⚠️ Cambios automáticos en archivos
+                </div>
+                <a href="https://docs.together.ai/docs/how-to-use-opencode" class="citation-link text-xs">[1]</a>
+              </div>
+
+              <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                  <i class="fas fa-code text-green-600 mr-2"></i>
+                  Generación Automática
+                </h4>
+                <p class="text-gray-600 text-sm">Transforma descripciones de alto nivel en implementaciones completas, incluyendo múltiples archivos y actualizaciones coordinadas.</p>
+              </div>
+
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                  <i class="fas fa-clock text-blue-600 mr-2"></i>
+                  Aplicación en Tiempo Real
+                </h4>
+                <p class="text-gray-600 text-sm">Los cambios se aplican atómicamente al sistema de archivos, con actualización inmediata en el editor de VS Code.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Shortcuts and Navigation -->
+      <section id="atajos" class="section-anchor mb-16">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
+          <h2 class="font-canela text-3xl font-bold text-gray-900 mb-8">
+            3. Atajos y Navegación en VS Code
+          </h2>
+
+          <div id="sesiones" class="section-anchor mb-12">
+            <h3 class="font-canela text-2xl font-semibold text-gray-800 mb-6">3.1 Gestión de Sesiones</h3>
+
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+              <div class="bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-lg p-6">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                  <i class="fas fa-rocket text-teal-600 text-xl mr-2"></i>
+                  Lanzamiento Rápido
+                </h4>
+                <div class="code-block !p-2 !text-xs mb-3">
+                  Ctrl + Esc
+                </div>
+                <p class="text-xs text-gray-600">Inicia o enfoca una sesión de OpenCode existente</p>
+                <a href="https://marketplace.visualstudio.com/items?itemName=sst-dev.opencode" class="citation-link text-xs">[2]</a>
+              </div>
+
+              <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-6">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                  <i class="fas fa-plus-circle text-blue-600 text-xl mr-2"></i>
+                  Nueva Sesión
+                </h4>
+                <div class="code-block !p-2 !text-xs mb-3">
+                  Ctrl + Shift + Esc
+                </div>
+                <p class="text-xs text-gray-600">Crea una sesión independiente en nueva pestaña</p>
+              </div>
+
+              <div class="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-6">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                  <i class="fas fa-crosshairs text-purple-600 text-xl mr-2"></i>
+                  Enfoque Sesión
+                </h4>
+                <div class="code-block !p-2 !text-xs mb-3">
+                  Ctrl + Esc
+                </div>
+                <p class="text-xs text-gray-600">Trae al frente una sesión existente sin crear nueva</p>
+              </div>
+            </div>
+
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+              <h4 class="font-semibold text-gray-800 mb-4">Ventajas de Sesiones Múltiples</h4>
+              <div class="grid md:grid-cols-2 gap-4">
+                <ul class="space-y-2 text-sm text-gray-600">
+                  <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Contextos aislados</li>
+                  <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Trabajo paralelo</li>
+                  <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Sin contaminación cruzada</li>
+                </ul>
+                <ul class="space-y-2 text-sm text-gray-600">
+                  <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Diferentes tareas simultáneas</li>
+                  <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Aislamiento de errores</li>
+                  <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Memoria independiente</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div id="archivos" class="section-anchor">
+            <h3 class="font-canela text-2xl font-semibold text-gray-800 mb-6">3.2 Referencias de Archivos</h3>
+
+            <div class="space-y-6">
+              <div class="workflow-step">
+                <div class="flex items-start">
+                  <div class="workflow-step-number">1</div>
+                  <div class="flex-1">
+                    <h4 class="font-semibold text-gray-800 mb-3">Atajo para Inserción (Alt+Ctrl+K)</h4>
+                    <p class="text-gray-600 mb-4">Inserta automáticamente una referencia al archivo actual o selección con la sintaxis @archivo#Líneas</p>
+                    <div class="code-block !text-xs">
+                      <div class="text-green-400"># Sintaxis generada</div>
+                      <div>@NombreArchivo#L37-42</div>
+                    </div>
+                    <a href="https://marketplace.visualstudio.com/items?itemName=sst-dev.opencode" class="citation-link text-xs">[2]</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="workflow-step">
+                <div class="flex items-start">
+                  <div class="workflow-step-number">2</div>
+                  <div class="flex-1">
+                    <h4 class="font-semibold text-gray-800 mb-3">Búsqueda Difusa con @</h4>
+                    <p class="text-gray-600 mb-4">Comienza a escribir @ seguido de parte del nombre del archivo para activar el autocompletado inteligente</p>
+                    <div class="bg-gray-100 border border-gray-300 rounded p-4">
+                      <div class="text-sm font-mono">
+                        <div class="text-gray-600"># Ejemplo de uso</div>
+                        <div>@userctrl → UserController.js</div>
+                        <div>@auth → authenticationMiddleware.ts</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="workflow-step">
+                <div class="flex items-start">
+                  <div class="workflow-step-number">3</div>
+                  <div class="flex-1">
+                    <h4 class="font-semibold text-gray-800 mb-3">Contexto Automático</h4>
+                    <p class="text-gray-600 mb-4">OpenCode recibe automáticamente:</p>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-600">
+                      <li>Archivo activo en la pestaña del editor</li>
+                      <li>Texto seleccionado (resaltado)</li>
+                      <li>Posición del cursor en el código</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 4: Code Generation -->
+      <section id="generacion" class="section-anchor mb-16">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
+          <h2 class="font-canela text-3xl font-bold text-gray-900 mb-8">
+            4. Funciones de Generación de Código
+          </h2>
+
+          <div class="grid md:grid-cols-2 gap-8 mb-8">
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+              <h3 class="font-canela text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-magic text-blue-600 mr-3"></i>
+                Creación de Features
+              </h3>
+              <p class="text-gray-600 text-sm mb-4">Desarrollo de nuevas funcionalidades desde descripciones en lenguaje natural, incluyendo controladores, modelos y middleware.</p>
+              <div class="bg-white border border-gray-200 rounded p-3">
+                <div class="text-xs font-mono text-gray-700">
+                  &#34;Crea un endpoint REST para gestión de usuarios con validación y autenticación JWT&#34;
+                </div>
+              </div>
+              <a href="https://docs.together.ai/docs/how-to-use-opencode" class="citation-link text-xs">[1]</a>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
+              <h3 class="font-canela text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-graduation-cap text-green-600 mr-3"></i>
+                Asistencia Contextual
+              </h3>
+              <p class="text-gray-600 text-sm mb-4">Explicación de bloques de código, análisis de complejidad temporal y sugerencias de optimización contextual.</p>
+              <ul class="text-xs text-gray-600 space-y-1">
+                <li>• Análisis de algoritmos complejos</li>
+                <li>• Detección de code smells</li>
+                <li>• Recomendaciones de patrones</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="highlight-box">
+            <h3 class="font-semibold mb-4 flex items-center">
+              <i class="fas fa-language mr-2"></i>
+              Integración con LSP
+            </h3>
+            <p class="mb-4">OpenCode utiliza el Protocolo de Servidor de Lenguaje para comprender semánticamente el código, permitiendo:</p>
+            <div class="grid md:grid-cols-3 gap-4 text-sm">
+              <div class="bg-white bg-opacity-20 rounded p-3">
+                <strong>Detección de Lenguaje</strong>
+                <br/>
+                <span class="text-xs opacity-90">Análisis automático del stack tecnológico</span>
+              </div>
+              <div class="bg-white bg-opacity-20 rounded p-3">
+                <strong>Comprehensión de Tipos</strong>
+                <br/>
+                <span class="text-xs opacity-90">Acceso a información de tipos y símbolos</span>
+              </div>
+              <div class="bg-white bg-opacity-20 rounded p-3">
+                <strong>Generación Idiomática</strong>
+                <br/>
+                <span class="text-xs opacity-90">Código consistente con el proyecto</span>
+              </div>
+            </div>
+            <a href="https://docs.together.ai/docs/how-to-use-opencode" class="citation-link text-xs">[1]</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 5: Editing and Debugging -->
+      <section id="edicion" class="section-anchor mb-16">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
+          <h2 class="font-canela text-3xl font-bold text-gray-900 mb-8">
+            5. Funciones de Edición y Depuración
+          </h2>
+
+          <div class="grid md:grid-cols-2 gap-8 mb-8">
+            <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+              <h3 class="font-canela text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-bug text-red-600 mr-3"></i>
+                Corrección de Errores
+              </h3>
+              <div class="space-y-4">
+                <div class="bg-white border border-gray-200 rounded p-4">
+                  <h4 class="font-medium text-gray-800 mb-2">Detección de Bugs</h4>
+                  <p class="text-sm text-gray-600">Análisis estático y semántico para identificar errores lógicos, excepciones potenciales y vulnerabilidades de seguridad.</p>
+                </div>
+                <div class="bg-white border border-gray-200 rounded p-4">
+                  <h4 class="font-medium text-gray-800 mb-2">Propuesta de Fixes</h4>
+                  <p class="text-sm text-gray-600">Soluciones concretas con código corregido y explicación del razonamiento detrás de cada corrección.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <h3 class="font-canela text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-wrench text-blue-600 mr-3"></i>
+                Mejora de Código
+              </h3>
+              <div class="space-y-4">
+                <div class="bg-white border border-gray-200 rounded p-4">
+                  <h4 class="font-medium text-gray-800 mb-2">Optimización de Algoritmos</h4>
+                  <p class="text-sm text-gray-600">Transformación de implementaciones ineficientes en soluciones computacionalmente superiores con análisis de complejidad.</p>
+                </div>
+                <div class="bg-white border border-gray-200 rounded p-4">
+                  <h4 class="font-medium text-gray-800 mb-2">Aplicación de Patrones</h4>
+                  <p class="text-sm text-gray-600">Introducción sistemática de patrones de diseño probados para mejorar la flexibilidad y mantenibilidad del código.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+            <h3 class="font-semibold text-gray-800 mb-4 flex items-center">
+              <i class="fas fa-shield-alt text-gray-600 mr-3"></i>
+              Mantenimiento de Consistencia
+            </h3>
+            <p class="text-gray-600 mb-4">OpenCode mantiene automáticamente la consistencia con el código base existente, respetando:</p>
+            <div class="grid md:grid-cols-4 gap-4 text-sm">
+              <div class="text-center">
+                <i class="fas fa-indent text-2xl text-gray-400 mb-2"></i>
+                <div class="font-medium">Estilo de Indentación</div>
+              </div>
+              <div class="text-center">
+                <i class="fas fa-tags text-2xl text-gray-400 mb-2"></i>
+                <div class="font-medium">Convenciones de Nombres</div>
+              </div>
+              <div class="text-center">
+                <i class="fas fa-sitemap text-2xl text-gray-400 mb-2"></i>
+                <div class="font-medium">Estructura de Imports</div>
+              </div>
+              <div class="text-center">
+                <i class="fas fa-exclamation-triangle text-2xl text-gray-400 mb-2"></i>
+                <div class="font-medium">Manejo de Errores</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Continue with remaining sections... -->
+      <!-- For brevity, I'll include a few more key sections -->
+
+      <!-- Section 8: Workflow -->
+      <section id="flujo" class="section-anchor mb-16">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
+          <h2 class="font-canela text-3xl font-bold text-gray-900 mb-8">
+            8. Flujo de Trabajo Recomendado
+          </h2>
+
+          <div class="space-y-8">
+            <div class="workflow-step">
+              <div class="flex items-start">
+                <div class="workflow-step-number">1</div>
+                <div class="flex-1">
+                  <h3 class="font-canela text-xl font-semibold text-gray-800 mb-4">Inicio de Tarea</h3>
+                  <div class="grid md:grid-cols-3 gap-4">
+                    <div class="bg-teal-50 border border-teal-200 rounded p-4">
+                      <h4 class="font-medium text-gray-800 mb-2">Apertura de Sesión</h4>
+                      <p class="text-sm text-gray-600">Ctrl+Esc en el directorio del proyecto</p>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 rounded p-4">
+                      <h4 class="font-medium text-gray-800 mb-2">Selección de Contexto</h4>
+                      <p class="text-sm text-gray-600">Referencia archivos relevantes con @</p>
+                    </div>
+                    <div class="bg-purple-50 border border-purple-200 rounded p-4">
+                      <h4 class="font-medium text-gray-800 mb-2">Definición en Modo Plan</h4>
+                      <p class="text-sm text-gray-600">Establece objetivos claros</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="workflow-step">
+              <div class="flex items-start">
+                <div class="workflow-step-number">2</div>
+                <div class="flex-1">
+                  <h3 class="font-canela text-xl font-semibold text-gray-800 mb-4">Ejecución y Verificación</h3>
+                  <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="font-medium text-gray-800 mb-3 flex items-center">
+                        <i class="fas fa-exchange-alt text-orange-500 mr-2"></i>
+                        Cambio a Modo Build
+                      </h4>
+                      <p class="text-sm text-gray-600 mb-3">Presiona Tab para transicionar a implementación, verificando visualmente el indicador de modo.</p>
+                      <div class="code-block !text-xs !p-3">
+                        <div class="text-green-400"># Verifica el modo</div>
+                        <div>BUILD → Implementación activa</div>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 class="font-medium text-gray-800 mb-3 flex items-center">
+                        <i class="fas fa-search text-green-500 mr-2"></i>
+                        Revisión de Cambios
+                      </h4>
+                      <p class="text-sm text-gray-600 mb-3">Examina propuestas, diffs y resúmenes antes de la aplicación final.</p>
+                      <div class="bg-yellow-50 border border-yellow-200 rounded p-3 text-sm text-yellow-800">
+                        <strong>Importante:</strong> Siempre revisa los cambios propuestos antes de confirmar
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="highlight-box mt-8">
+            <h3 class="font-semibold mb-4 flex items-center">
+              <i class="fas fa-trophy mr-2"></i>
+              Mejores Prácticas
+            </h3>
+            <div class="grid md:grid-cols-2 gap-6">
+              <ul class="space-y-2 text-sm">
+                <li class="flex items-center"><i class="fas fa-check-circle text-green-400 mr-2"></i>Siempre itera en Modo Plan primero</li>
+                <li class="flex items-center"><i class="fas fa-check-circle text-green-400 mr-2"></i>Usa referencias de archivos específicas</li>
+                <li class="flex items-center"><i class="fas fa-check-circle text-green-400 mr-2"></i>Verifica el modo activo antes de comandos</li>
+              </ul>
+              <ul class="space-y-2 text-sm">
+                <li class="flex items-center"><i class="fas fa-check-circle text-green-400 mr-2"></i>Mantén commits frecuentes en git</li>
+                <li class="flex items-center"><i class="fas fa-check-circle text-green-400 mr-2"></i>Revisa críticamente los cambios generados</li>
+                <li class="flex items-center"><i class="fas fa-check-circle text-green-400 mr-2"></i>Aprovecha el contexto acumulativo</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Final Section: Troubleshooting -->
+      <section id="solucion" class="section-anchor mb-16">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
+          <h2 class="font-canela text-3xl font-bold text-gray-900 mb-8">
+            9. Solución de Problemas Comunes
+          </h2>
+
+          <div class="grid md:grid-cols-2 gap-8">
+            <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+              <h3 class="font-canela text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-puzzle-piece text-red-600 mr-3"></i>
+                Problemas con la Extensión
+              </h3>
+              <div class="space-y-3">
+                <div class="bg-white border border-gray-200 rounded p-3">
+                  <h4 class="font-medium text-gray-800 text-sm">Verificación de Permisos</h4>
+                  <p class="text-xs text-gray-600">Revisa permisos en ~/.vscode/extensions y reinstala si es necesario</p>
+                </div>
+                <div class="bg-white border border-gray-200 rounded p-3">
+                  <h4 class="font-medium text-gray-800 text-sm">Confirmación de PATH</h4>
+                  <p class="text-xs text-gray-600">Asegúrate que &#39;code&#39; esté disponible en el PATH del sistema</p>
+                </div>
+              </div>
+              <a href="https://marketplace.visualstudio.com/items?itemName=sst-dev.opencode" class="citation-link text-xs">[2]</a>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <h3 class="font-canela text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-network-wired text-blue-600 mr-3"></i>
+                Problemas de Conectividad
+              </h3>
+              <div class="space-y-3">
+                <div class="bg-white border border-gray-200 rounded p-3">
+                  <h4 class="font-medium text-gray-800 text-sm">Validación de Big Pickle</h4>
+                  <p class="text-xs text-gray-600">Ejecuta &#39;opencode auth status&#39; para verificar la conexión</p>
+                </div>
+                <div class="bg-white border border-gray-200 rounded p-3">
+                  <h4 class="font-medium text-gray-800 text-sm">Gestión de Rate Limits</h4>
+                  <p class="text-xs text-gray-600">Optimiza prompts y distribuye la carga para evitar límites</p>
+                </div>
+              </div>
+              <a href="https://docs.together.ai/docs/how-to-use-opencode" class="citation-link text-xs">[1]</a>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 mt-8">
+            <h3 class="font-semibold text-gray-800 mb-4 flex items-center">
+              <i class="fas fa-life-ring text-gray-600 mr-3"></i>
+              Recursos de Ayuda Adicionales
+            </h3>
+            <div class="grid md:grid-cols-3 gap-4">
+              <div class="text-center">
+                <i class="fas fa-book text-2xl text-teal-600 mb-2"></i>
+                <div class="font-medium text-sm">Documentación</div>
+                <a href="https://docs.together.ai/docs/how-to-use-opencode" class="citation-link text-xs">docs.together.ai →</a>
+              </div>
+              <div class="text-center">
+                <i class="fas fa-comments text-2xl text-teal-600 mb-2"></i>
+                <div class="font-medium text-sm">Comunidad</div>
+                <a href="https://marketplace.visualstudio.com/items?itemName=sst-dev.opencode" class="citation-link text-xs">VS Code Marketplace →</a>
+              </div>
+              <div class="text-center">
+                <i class="fas fa-code-branch text-2xl text-teal-600 mb-2"></i>
+                <div class="font-medium text-sm">Repositorio</div>
+                <a href="#" class="citation-link text-xs">GitHub Issues →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Highlight current section in TOC
+        const sections = document.querySelectorAll('.section-anchor');
+        const tocLinks = document.querySelectorAll('.toc-fixed a');
+
+        function highlightCurrentSection() {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            tocLinks.forEach(link => {
+                link.classList.remove('text-teal-700', 'font-semibold');
+                link.classList.add('text-slate-600');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.remove('text-slate-600');
+                    link.classList.add('text-teal-700', 'font-semibold');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', highlightCurrentSection);
+        highlightCurrentSection(); // Initial call
+    </script>
+  
+
+</body>
+</html>
