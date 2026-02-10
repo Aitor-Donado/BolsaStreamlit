@@ -12,3 +12,6 @@ datos_diarios/
 datos_horarios/
 data/
 .ruff_cache/
+
+# Archivos
+datos_diarios.zip

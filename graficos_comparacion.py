@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from data_utils import DATA_DIRS, filter_by_date, list_csv_files, load_prices
+from data_utils import DATA_DIRS, filter_by_date, list_parquet_files, load_prices
 
 
 @st.cache_data(show_spinner=False)
@@ -18,10 +18,10 @@ def render():
 
     frequency = st.sidebar.radio("Frecuencia", list(DATA_DIRS.keys()), key="freq_comp")
     folder = DATA_DIRS[frequency]
-    files = list_csv_files(folder)
+    files = list_parquet_files(folder)
 
     if len(files) < 2:
-        st.info(f"Necesitas al menos dos ficheros csv en {folder} para comparar.")
+        st.info(f"Necesitas al menos dos ficheros parquet en {folder} para comparar.")
         return
 
     file_one = st.sidebar.selectbox(
@@ -64,12 +64,16 @@ def render():
     df1_f = filter_by_date(df1, date_col1, start_date, end_date)
     df2_f = filter_by_date(df2, date_col2, start_date, end_date)
 
-    common_dates = sorted(set(df1_f[date_col1].dt.date).intersection(set(df2_f[date_col2].dt.date)))
+    common_dates = sorted(
+        set(df1_f[date_col1].dt.date).intersection(set(df2_f[date_col2].dt.date))
+    )
     df1_common = df1_f[df1_f[date_col1].dt.date.isin(common_dates)]
     df2_common = df2_f[df2_f[date_col2].dt.date.isin(common_dates)]
 
     if not common_dates:
-        st.warning("No hay fechas u horas comunes en el rango seleccionado para el grafico principal.")
+        st.warning(
+            "No hay fechas u horas comunes en el rango seleccionado para el grafico principal."
+        )
     else:
         fig = go.Figure(
             data=[
@@ -102,7 +106,7 @@ def render():
             height=650,
         )
 
-        st.plotly_chart(fig, width='stretch')
+        st.plotly_chart(fig, width="stretch")
 
     # Ratio chart sobre union de fechas, rellenando con ultimo Close de cada serie
     union_index = sorted(set(df1_f[date_col1]).union(set(df2_f[date_col2])))
@@ -132,7 +136,9 @@ def render():
     ratio_df["High"] = df1_ratio["High"] / df2_ratio["Low"]
     ratio_df["Low"] = df1_ratio["Low"] / df2_ratio["High"]
     ratio_df["Close"] = df1_ratio["Close"] / df2_ratio["Close"]
-    ratio_df = ratio_df.replace([pd.NA, pd.NaT, float("inf"), -float("inf")], pd.NA).dropna()
+    ratio_df = ratio_df.replace(
+        [pd.NA, pd.NaT, float("inf"), -float("inf")], pd.NA
+    ).dropna()
 
     if ratio_df.empty:
         st.warning("No hay valores validos para el ratio en el rango seleccionado.")
@@ -161,7 +167,7 @@ def render():
         height=650,
     )
 
-    st.plotly_chart(ratio_fig, width='stretch')
+    st.plotly_chart(ratio_fig, width="stretch")
 
     if common_dates:
         with st.expander("Ver datos comunes"):
@@ -169,11 +175,26 @@ def render():
             st.dataframe(
                 df1_common[[date_col1, "Open", "High", "Low", "Close"]]
                 .reset_index(drop=True)
-                .rename(columns={date_col1: "Fecha", "Open": f"A1 Open", "High": f"A1 High", "Low": f"A1 Low", "Close": f"A1 Close"})
+                .rename(
+                    columns={
+                        date_col1: "Fecha",
+                        "Open": f"A1 Open",
+                        "High": f"A1 High",
+                        "Low": f"A1 Low",
+                        "Close": f"A1 Close",
+                    }
+                )
             )
             st.dataframe(
                 df2_common[[date_col2, "Open", "High", "Low", "Close"]]
                 .reset_index(drop=True)
-                .rename(columns={date_col2: "Fecha", "Open": f"A2 Open", "High": f"A2 High", "Low": f"A2 Low", "Close": f"A2 Close"})
+                .rename(
+                    columns={
+                        date_col2: "Fecha",
+                        "Open": f"A2 Open",
+                        "High": f"A2 High",
+                        "Low": f"A2 Low",
+                        "Close": f"A2 Close",
+                    }
+                )
             )
-

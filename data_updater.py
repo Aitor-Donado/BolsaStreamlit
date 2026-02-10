@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import yfinance as yf
 from yfinance.exceptions import YFRateLimitError
@@ -54,21 +55,42 @@ def extrae_datos_yf(ticker: str, hora: bool = False):
         return None
 
 
-def actualizar_datos_csv(path_csv: Path) -> bool:
+def optimize_dtypes(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Actualiza un archivo CSV con datos frescos de yfinance.
+    Optimiza los tipos de datos para reducir el espacio y mejorar el rendimiento.
+    """
+    # Reducir precisión de columnas float a float32
+    float_columns = ["Close", "High", "Low", "Open", "Dividends", "Stock Splits"]
+    for col in float_columns:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+            df[col] = df[col].astype(np.float32)
+
+    # Reducir precisión de columnas int a int32
+    int_columns = ["Volume"]
+    for col in int_columns:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+            df[col] = df[col].astype(np.int32)
+
+    return df
+
+
+def actualizar_datos_parquet(path_parquet: Path) -> bool:
+    """
+    Actualiza un archivo Parquet con datos frescos de yfinance.
 
     Args:
-        path_csv: Ruta al archivo CSV a actualizar
+        path_parquet: Ruta al archivo Parquet a actualizar
 
     Returns:
         bool: True si se actualizó correctamente, False si no
     """
-    if not path_csv.exists():
+    if not path_parquet.exists():
         return False
 
     # Determinar ticker y tipo de datos desde el nombre del archivo
-    filename = path_csv.stem
+    filename = path_parquet.stem
 
     # Casos especiales: archivos horarios que terminan en "_h"
     if filename.endswith("_h"):
@@ -95,9 +117,11 @@ def actualizar_datos_csv(path_csv: Path) -> bool:
         return False
 
     try:
+        # Optimizar tipos de datos antes de guardar
+        datos_nuevos = optimize_dtypes(datos_nuevos)
         # Guardar sobrescribiendo el archivo
-        datos_nuevos.to_csv(path_csv, index=False)
+        datos_nuevos.to_parquet(path_parquet, index=False)
         return True
     except Exception as e:
-        print(f"Error al guardar CSV {path_csv}: {e}")
+        print(f"Error al guardar Parquet {path_parquet}: {e}")
         return False

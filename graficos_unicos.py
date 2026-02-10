@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 from scipy.signal import argrelextrema
 
-from data_utils import DATA_DIRS, filter_by_date, list_csv_files, load_prices
-from data_updater import actualizar_datos_csv
+from data_utils import DATA_DIRS, filter_by_date, list_parquet_files, load_prices
+from data_updater import actualizar_datos_parquet
 
 
 @st.cache_data(show_spinner=False)
@@ -104,10 +104,10 @@ def render():
 
     frequency = st.sidebar.radio("Frecuencia", list(DATA_DIRS.keys()), key="freq_unico")
     folder = DATA_DIRS[frequency]
-    files = list_csv_files(folder)
+    files = list_parquet_files(folder)
 
     if not files:
-        st.info(f"No hay ficheros csv en {folder}")
+        st.info(f"No hay ficheros parquet en {folder}")
         return
 
     selected = st.sidebar.selectbox(
@@ -117,7 +117,7 @@ def render():
     # Botón para actualizar datos
     if st.sidebar.button("🔄 Actualizar datos", key="update_data_unico"):
         with st.spinner(f"Actualizando datos de {selected.name}..."):
-            success = actualizar_datos_csv(selected)
+            success = actualizar_datos_parquet(selected)
             if success:
                 st.success(f"✅ Datos de {selected.name} actualizados correctamente")
                 # Limpiar caché para recargar datos frescos
