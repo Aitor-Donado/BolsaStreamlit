@@ -5,7 +5,14 @@ import numpy as np
 import pandas as pd
 from scipy.signal import argrelextrema
 
-from data_utils import DATA_DIRS, filter_by_date, list_parquet_files, load_prices
+from data_utils import (
+    DATA_DIRS,
+    filter_by_date,
+    list_parquet_files,
+    load_prices,
+    get_sectors,
+    get_tickers_by_sector,
+)
 from data_updater import actualizar_datos_parquet
 
 
@@ -106,13 +113,27 @@ def render():
     folder = DATA_DIRS[frequency]
     files = list_parquet_files(folder)
 
-    if not files:
-        st.info(f"No hay ficheros parquet en {folder}")
+    sectors = ["Todos"] + get_sectors()
+    selected_sector = st.sidebar.selectbox(
+        "Sector", sectors, index=0, key="sector_unico"
+    )
+
+    tickers_filtered = get_tickers_by_sector(selected_sector)
+
+    if not tickers_filtered:
+        st.info(f"No hay tickers validados para el sector {selected_sector}")
         return
 
-    selected = st.sidebar.selectbox(
-        "Archivo", files, format_func=lambda p: p.stem, index=0, key="file_unico"
+    selected_ticker = st.sidebar.selectbox(
+        "Ticker", tickers_filtered, index=0, key="ticker_unico"
     )
+    selected = folder / f"{selected_ticker}.parquet"
+
+    if not selected.exists():
+        st.warning(
+            f"No existe archivo para {selected_ticker}. Descarga los datos primero."
+        )
+        return
 
     # Botón para actualizar datos
     if st.sidebar.button("🔄 Actualizar datos", key="update_data_unico"):

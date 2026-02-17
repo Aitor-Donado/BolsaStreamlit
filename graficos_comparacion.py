@@ -4,7 +4,14 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from data_utils import DATA_DIRS, filter_by_date, list_parquet_files, load_prices
+from data_utils import (
+    DATA_DIRS,
+    filter_by_date,
+    list_parquet_files,
+    load_prices,
+    get_sectors,
+    get_tickers_by_sector,
+)
 
 
 @st.cache_data(show_spinner=False)
@@ -20,19 +27,37 @@ def render():
     folder = DATA_DIRS[frequency]
     files = list_parquet_files(folder)
 
-    if len(files) < 2:
-        st.info(f"Necesitas al menos dos ficheros parquet en {folder} para comparar.")
+    tickers = get_tickers_by_sector()
+
+    if len(tickers) < 2:
+        st.info(
+            "Se necesitan al menos dos tickers validados en xtb_verificado.csv para comparar."
+        )
         return
 
-    file_one = st.sidebar.selectbox(
-        "Archivo 1", files, format_func=lambda p: p.stem, index=0, key="file_comp_1"
-    )
-    file_two = st.sidebar.selectbox(
-        "Archivo 2", files, format_func=lambda p: p.stem, index=1, key="file_comp_2"
+    sectors = ["Todos"] + get_sectors()
+    selected_sector = st.sidebar.selectbox(
+        "Sector", sectors, index=0, key="sector_comp"
     )
 
-    if file_one == file_two:
-        st.warning("Selecciona dos archivos distintos para comparar.")
+    tickers_filtered = get_tickers_by_sector(selected_sector)
+
+    if len(tickers_filtered) < 2:
+        st.info(f"Se necesitan al menos dos tickers para el sector {selected_sector}")
+        return
+
+    ticker_one = st.sidebar.selectbox(
+        "Ticker 1", tickers_filtered, index=0, key="ticker_comp_1"
+    )
+    ticker_two = st.sidebar.selectbox(
+        "Ticker 2", tickers_filtered, index=1, key="ticker_comp_2"
+    )
+
+    file_one = folder / f"{ticker_one}.parquet"
+    file_two = folder / f"{ticker_two}.parquet"
+
+    if not file_one.exists() or not file_two.exists():
+        st.warning("Algunos archivos no existen. Descarga los datos primero.")
         return
 
     try:

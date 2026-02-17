@@ -66,3 +66,33 @@ def filter_by_date(df: pd.DataFrame, date_col: str, start, end) -> pd.DataFrame:
     end_ts = pd.to_datetime(end) + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)
     mask = (df[date_col] >= start_ts) & (df[date_col] <= end_ts)
     return df.loc[mask]
+
+
+def get_validated_tickers() -> list[str]:
+    xtb_path = Path("xtb_verificado.csv")
+    if not xtb_path.exists():
+        return []
+    df = pd.read_csv(xtb_path)
+    validated = df[df["Validado"] == True]
+    return sorted(validated["ticker.yf"].dropna().unique().tolist())
+
+
+def get_sectors() -> list[str]:
+    xtb_path = Path("xtb_verificado.csv")
+    if not xtb_path.exists():
+        return ["No especificado"]
+    df = pd.read_csv(xtb_path)
+    validated = df[df["Validado"] == True]
+    sectors = validated["Sector"].fillna("No especificado").unique()
+    return sorted(sectors.tolist())
+
+
+def get_tickers_by_sector(sector: str | None = None) -> list[str]:
+    xtb_path = Path("xtb_verificado.csv")
+    if not xtb_path.exists():
+        return []
+    df = pd.read_csv(xtb_path)
+    validated = df[df["Validado"] == True]
+    if sector and sector != "Todos":
+        validated = validated[validated["Sector"].fillna("No especificado") == sector]
+    return sorted(validated["ticker.yf"].dropna().unique().tolist())
