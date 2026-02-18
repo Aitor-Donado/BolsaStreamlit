@@ -111,7 +111,7 @@ def render():
 
     frequency = st.sidebar.radio("Frecuencia", list(DATA_DIRS.keys()), key="freq_unico")
     folder = DATA_DIRS[frequency]
-    files = list_parquet_files(folder)
+    # files = list_parquet_files(folder)
 
     sectors = ["Todos"] + get_sectors()
     selected_sector = st.sidebar.selectbox(
@@ -339,7 +339,7 @@ def render():
                 for i, s in enumerate(supports):
                     st.write(f"S{i + 1}: {s:.2f}")
 
-    st.plotly_chart(fig, width="content")
+    st.plotly_chart(fig, width="stretch")
 
     with st.expander("Ver datos filtrados"):
         st.dataframe(filtered.reset_index(drop=True))
